@@ -289,7 +289,7 @@ if ($machine && $machine->num_rows > 0) {
         import { resetSelect } from '/utility.js';
         
         
-        </script>
+    </script>
     <script>
         
 
@@ -311,6 +311,8 @@ if ($machine && $machine->num_rows > 0) {
                         select.innerHTML = "";
                         if (data.length > 0) {
                             data.forEach(item => {
+                                //change happened
+                                
 
                                 let option = document.createElement("option");
                                 option.value = item;      // internal value
