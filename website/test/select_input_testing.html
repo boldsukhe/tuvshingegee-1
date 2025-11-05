@@ -1,0 +1,81 @@
+ $(document).on('input', 'input[name="ajliin_turul"]:not([readonly])', function () {
+    let row = $(this).closest("tr"); 
+    let bulegSelect = row.find('select[name="buleg_id[]"]'); 
+    //////////////
+    let uniqueId = row.getAttribute('data-unique-id');
+    
+    //let linkedRows = document.querySelectorAll(`tr[data-parent-id="${uniqueId}"]`);
+    //linkedRows.forEach(nr => {
+    //    nr.querySelector('input[name="ajliin_turul"]').value = $(this).val();
+    //});
+    let linkedRows = document.querySelectorAll(`tr[data-parent-id="${uniqueId}"]`);
+    linkedRows.forEach(nr => {
+        let ajliinTurulInput = nr.querySelector('input[name="ajliin_turul"]');
+        if (ajliinTurulInput) {
+            ajliinTurulInput.value = e.target.value;
+        }
+    });
+
+
+    console.log("Editable ajliin_turul in row:", row.attr("id"));
+    console.log("This row's buleg_id:", bulegSelect.val());
+    console.log("This row's ajliin_turul:", $(this).val());
+});
+//////////////////////////////////////////////////////////////////////////
+
+    $(document).on('change', 'select[name="buleg_id[]"]', function () {
+        let buleg_id = $(this).val();
+        let row = $(this).closest('tr');
+
+        // Assign a unique id to this row using incrementing lastId
+        let uniqueId = ++lastId;
+
+        row.setAttribute('id', 'row-' + uniqueId);
+        row.attr('data-unique-id', uniqueId);
+        console.log("new row", row);
+
+          $("#tableBody tr.dynamic-row").remove();
+
+         
+
+        if (buleg_id) {
+            fetch("get_ded_buleg_number.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "ded_buleg=" + encodeURIComponent(buleg_id)
+            })
+            .then(response => response.json())
+            .then(data => {
+                let table = document.getElementById("tableBody");
+
+                data.forEach(item => {
+                    let newRow = document.createElement("tr");
+
+                    // Assign a unique id to each new row using incrementing lastId
+                    let newRowId = ++lastId;
+                   newRow.setAttribute('id', 'row-' + newRowId); // 
+                   newRow.setAttribute('data-parent-id', uniqueId); //
+                      // ✅ Mark this row as dynamic so we can clear later
+                    newRow.classList.add("dynamic-row");
+
+                    newRow.innerHTML = `
+                    <td>${item.text}</td>
+                    <td><input type="text" name="ajliin_turul" readonly></td> 
+                    <td><input type="text" name="negj" readonly></td>
+                    <td><input type="number" name="quantity[]" oninput="calculateTotal(this)"></td>
+                    <td><input type="number" name="unit_cost[]" oninput="calculateTotal(this)"></td>
+                    <td><input type="number" name="total_cost[]" readonly></td>
+                    <td><input type="date" name="start_date[]"></td>
+                    <td><input type="date" name="end_date[]"></td>
+                    `;
+
+                    table.appendChild(newRow);
+
+                    // Access the ajliin_turul input of this new row using its unique id:
+                    // Example: set its value
+                   //document.querySelector(`#row-${newRowId} input[name="ajliin_turul"]`).value =  document.querySelector(`#row-${uniqueId} input[name="ajliin_turul"]`).value
+                });
+            })
+            .catch(err => console.error("Error fetching subgroups:", err));
+        }
+    });
